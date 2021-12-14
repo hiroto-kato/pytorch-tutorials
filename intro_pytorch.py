@@ -9,23 +9,32 @@ from torchvision import datasets
 from torchvision.transforms import ToTensor, Lambda, Compose
 import matplotlib.pyplot as plt
 
+
 # パラメーター
-batch_size = 64 # バッチサイズ
-epochs = 5 # エポック数
-alpha = 0.001 # 学習率
+batch_size = 64  # バッチサイズ
+epochs = 5  # エポック数
+alpha = 0.001  # 学習率
+
 
 class NeuralNetwork(nn.Module):
     """modelの定義"""
+
     def __init__(self):
         super(NeuralNetwork, self).__init__()
         self.flatten = nn.Flatten()
-        self.linear_relu_stack = nn.Sequential(nn.Linear(28*28, 512), nn.ReLU(), nn.Linear(512, 512),
-                                               nn.ReLU(), nn.Linear(512, 10), nn.ReLU())
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(28 * 28, 512),
+            nn.ReLU(),
+            nn.Linear(512, 512),
+            nn.ReLU(),
+            nn.Linear(512, 10),
+            nn.ReLU(),
+        )
 
     def forward(self, x):
         """順伝搬"""
         x = self.flatten(x)
-        x = self.linear_relu_stack(x)        
+        x = self.linear_relu_stack(x)
         return x
 
 
@@ -66,18 +75,26 @@ def test(dataloader, model, device, loss_fn):
             pred = model(X)
             test_loss += loss_fn(pred, y).item()
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
-            
+
     test_loss /= size
     correct /= size
-    print("Test Error: \n Accuracy: {:>0.1f}%, Avg loss: {:>8f} \n".format(100*correct, test_loss))
-      
-            
+    print(
+        "Test Error: \n Accuracy: {:>0.1f}%, Avg loss: {:>8f} \n".format(
+            100 * correct, test_loss
+        )
+    )
+
+
 def main():
     # FashionMNISTは(画像, クラスid)のリストでつまってる。tmp[0][0]で画像, tmp[0][1]でクラスid
     # 訓練データをdatasetsからダウンロード
-    training_data = datasets.FashionMNIST(root="data", train=True, download=True, transform=ToTensor())
+    training_data = datasets.FashionMNIST(
+        root="data", train=True, download=True, transform=ToTensor()
+    )
     # テストデータをdatasetsからダウンロード
-    test_data = datasets.FashionMNIST(root="data", train=False, download=True, transform=ToTensor())
+    test_data = datasets.FashionMNIST(
+        root="data", train=False, download=True, transform=ToTensor()
+    )
 
     # データローダーの作成
     train_dataloader = DataLoader(training_data, batch_size=batch_size)
@@ -95,11 +112,11 @@ def main():
 
     # エポック分学習を行う
     for t in range(epochs):
-        print("Epoch {}\n-------------------------------".format(t+1))
+        print("Epoch {}\n-------------------------------".format(t + 1))
         train(train_dataloader, device, model, loss_fn, optimizer)
         test(test_dataloader, model, device, loss_fn)
     print("Done.")
-    
+
     # モデルの保存
     torch.save(model.state_dict(), "model.pth")
     print("Saved Pytorch Model State to model.pth")
@@ -109,16 +126,18 @@ def main():
     model = NeuralNetwork()
     model.load_state_dict(torch.load("model.pth"))
 
-    classes = ["T-shirt/top",
-               "Trouser",
-               "Pullover",
-               "Dress",
-               "Coat",
-               "Sandal",
-               "Shirt",
-               "Sneaker",
-               "Bag",
-               "Ankle boot"]
+    classes = [
+        "T-shirt/top",
+        "Trouser",
+        "Pullover",
+        "Dress",
+        "Coat",
+        "Sandal",
+        "Shirt",
+        "Sneaker",
+        "Bag",
+        "Ankle boot",
+    ]
 
     # 予測する
     model.eval()
@@ -127,7 +146,7 @@ def main():
         pred = model(x)
         predicted, actual = classes[pred[0].argmax(0)], classes[y]
         print("Predicted: {}, Actual: {}".format(predicted, actual))
-    
+
+
 if __name__ == "__main__":
     main()
-
